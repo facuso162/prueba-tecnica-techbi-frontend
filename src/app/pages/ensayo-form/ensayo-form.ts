@@ -7,7 +7,7 @@ import { EnsayoService } from '../../services/ensayo.service';
   imports: [],
   template: `<main class="bg-gray-50 p-4 flex flex-col gap-4 min-h-lvh max-w-4xl mx-auto">
       <h1 class="text-2xl font-bold">Crear ensayo</h1>
-      <form class="flex flex-col gap-4">
+      <section class="flex flex-col gap-4">
         <div class="flex flex-col gap-4">
           <label class="font-medium text-gray-800 text-sm" for="">Nombre ensayo</label>
           <input
@@ -126,7 +126,7 @@ import { EnsayoService } from '../../services/ensayo.service';
             Crear
           </button>
         </div>
-      </form>
+      </section>
     </main>
     @if (modalAgregarPruebaAbierto()) {
     <div
@@ -143,8 +143,8 @@ import { EnsayoService } from '../../services/ensayo.service';
           <div class="flex flex-col gap-4">
             <label class="font-medium text-gray-800 text-sm" for="">Descripción</label>
             <input
-              [value]="nuevaPruebaDescripcion()"
-              (input)="nuevaPruebaDescripcion.set($any($event.target).value)"
+              [value]="nuevaPrueba().descripcion"
+              (input)="onPruebaDescripcionChange($any($event.target).value)"
               class="placeholder:text-gray-500 px-4 py-3 border bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               type="text"
               placeholder="Ej: Medir resistencia..."
@@ -153,8 +153,8 @@ import { EnsayoService } from '../../services/ensayo.service';
           <div class="flex flex-col gap-4">
             <label class="font-medium text-gray-800 text-sm" for="">Valor prueba</label>
             <input
-              [value]="nuevaPruebaValor()"
-              (input)="nuevaPruebaValor.set($any($event.target).value)"
+              [value]="nuevaPrueba().valor"
+              (input)="onPruebaValorChange($any($event.target).value)"
               class="placeholder:text-gray-500 px-4 py-3 border bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               type="number"
               placeholder="Ej: 42"
@@ -208,6 +208,23 @@ export class EnsayoForm {
 
   modalAgregarPruebaAbierto = signal(false);
 
+  puedeCrearEnsayo = computed(
+    () =>
+      this.nombre().trim().length > 0 &&
+      this.formula().trim().length > 0 &&
+      this.descripcion().trim().length > 0
+  );
+
+  nuevaPrueba = signal<{ descripcion: string; valor: string }>({
+    descripcion: '',
+    valor: '',
+  });
+
+  puedeAgregarPrueba = computed(
+    () =>
+      this.nuevaPrueba().descripcion.trim().length > 0 && this.nuevaPrueba().valor.trim().length > 0
+  );
+
   abrirModalCreacionPrueba() {
     this.modalAgregarPruebaAbierto.set(true);
   }
@@ -216,22 +233,29 @@ export class EnsayoForm {
     this.modalAgregarPruebaAbierto.set(false);
   }
 
-  nuevaPruebaDescripcion = signal('');
-  nuevaPruebaValor = signal<number | null>(null);
-
-  limpiarCamposNuevaPrueba() {
-    this.nuevaPruebaDescripcion.set('');
-    this.nuevaPruebaValor.set(null);
+  onPruebaDescripcionChange(nuevaDescripcionPrueba: string) {
+    this.nuevaPrueba.update((np) => ({ ...np, descripcion: nuevaDescripcionPrueba }));
   }
 
-  puedeAgregarPrueba = computed(
-    () => this.nuevaPruebaDescripcion().trim().length > 0 && this.nuevaPruebaValor() !== null
-  );
+  onPruebaValorChange(nuevoValorPrueba: string) {
+    const nuevoValorPruebaParsed = Number(nuevoValorPrueba);
+
+    if (isNaN(nuevoValorPruebaParsed)) return;
+
+    this.nuevaPrueba.update((np) => ({ ...np, valor: nuevoValorPrueba }));
+  }
+
+  limpiarCamposNuevaPrueba() {
+    this.nuevaPrueba.set({
+      descripcion: '',
+      valor: '',
+    });
+  }
 
   agregarPrueba() {
     this.pruebas.update((pruebas) => [
       ...pruebas,
-      { descripcion: this.nuevaPruebaDescripcion(), valor: this.nuevaPruebaValor()! },
+      { descripcion: this.nuevaPrueba().descripcion, valor: Number(this.nuevaPrueba().valor) },
     ]);
   }
 
@@ -242,13 +266,6 @@ export class EnsayoForm {
   volver() {
     this.router.navigate(['/']);
   }
-
-  puedeCrearEnsayo = computed(
-    () =>
-      this.nombre().trim().length > 0 &&
-      this.formula().trim().length > 0 &&
-      this.descripcion().trim().length > 0
-  );
 
   crear() {
     const nuevoEnsayo = {
