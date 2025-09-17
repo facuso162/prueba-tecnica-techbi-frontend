@@ -2,10 +2,11 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { EnsayoItem } from '../../components/ensayo-item/ensayo-item';
 import { EnsayoService, Ensayo } from '../../services/ensayo.service';
 import { Router } from '@angular/router';
+import { Toast } from '../../components/toast/toast';
 
 @Component({
   selector: 'app-home',
-  imports: [EnsayoItem],
+  imports: [EnsayoItem, Toast, ConfirmModal],
   template: ` <main class="bg-gray-50 p-4 flex flex-col gap-4 min-h-lvh max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold">Gestión de ensayos</h1>
     <div>
@@ -46,53 +47,16 @@ import { Router } from '@angular/router';
       ></app-ensayo-item>
       } }
     </ul>
-    @if (errorToastMessage() !== null) {
-    <div
-      class="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow flex flex-col gap-4"
-    >
-      <h3 class="font-medium">Hubo un error</h3>
-      <p class="font-light">{{ errorToastMessage() }}</p>
-    </div>
-    } @if (successToastMessage() !== null) {
-    <div
-      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow flex flex-col gap-4"
-    >
-      <h3 class="font-medium">Operación exitosa</h3>
-      <p class="font-light">{{ successToastMessage() }}</p>
-    </div>
-    } @if (ensayoAEliminar() !== null) {
-    <div
-      (click)="cancelarBorrado()"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    >
-      <div
-        (click)="$event.stopPropagation()"
-        class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 flex flex-col gap-6"
-      >
-        <h2 class="text-xl font-bold">Confirmar eliminacion</h2>
-        <p>
-          ¿Estás seguro de que deseas borrar el ensayo
-          <span class="font-semibold">{{ ensayoAEliminar()?.nombre }}</span
-          >?
-        </p>
-        <!-- Botones -->
-        <div class="flex items-center justify-end gap-2">
-          <button
-            (click)="cancelarBorrado()"
-            class="bg-gray-50 text-gray-800 px-6 py-3 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 mr-4"
-          >
-            Cancelar
-          </button>
-          <button
-            (click)="confirmarBorrado()"
-            class="bg-red-500 text-white px-6 py-3 font-medium rounded-lg flex items-center gap-2 hover:bg-red-700 "
-          >
-            Borrar ensayo
-          </button>
-        </div>
-      </div>
-    </div>
-    }
+    <app-toast
+      [type]="'error'"
+      [message]="errorToastMessage()"
+      (closed)="errorToastMessage.set(null)"
+    ></app-toast>
+    <app-toast
+      [type]="'success'"
+      [message]="successToastMessage()"
+      (closed)="successToastMessage.set(null)"
+    ></app-toast>
   </main>`,
 })
 export class Home {
@@ -108,7 +72,6 @@ export class Home {
       next: (data) => this.ensayos.set(data),
       error: (err) => {
         this.errorToastMessage.set(err.error.message || 'Error desconocido');
-        setTimeout(() => this.errorToastMessage.set(null), 3000);
       },
     });
   }
@@ -141,12 +104,10 @@ export class Home {
         this.ensayos.update((ensayos) => ensayos.filter((e) => e.codigo !== ensayo.codigo));
         this.ensayoAEliminar.set(null);
         this.successToastMessage.set('El ensayo fue eliminado correctamente');
-        setTimeout(() => this.successToastMessage.set(null), 3000);
       },
       error: (err) => {
         this.ensayoAEliminar.set(null);
         this.errorToastMessage.set(err.error.message || 'Error desconocido');
-        setTimeout(() => this.errorToastMessage.set(null), 3000);
       },
     });
   }

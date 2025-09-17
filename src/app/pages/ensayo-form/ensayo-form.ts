@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { EnsayoService } from '../../services/ensayo.service';
+import { Toast } from '../../components/toast/toast';
 import { PruebaItem } from '../../components/prueba-item/prueba-item';
 
 @Component({
@@ -97,72 +98,16 @@ import { PruebaItem } from '../../components/prueba-item/prueba-item';
         </div>
       </section>
     </main>
-    @if (modalAgregarPruebaAbierto()) {
-    <div
-      (click)="[limpiarCamposNuevaPrueba(), cerrarModalCreacionPrueba()]"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    >
-      <div
-        (click)="$event.stopPropagation()"
-        class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 flex flex-col gap-6"
-      >
-        <h2 class="text-xl font-bold">Agregar prueba</h2>
-        <!-- Formulario modal -->
-        <div class="flex flex-col gap-4">
-          <div class="flex flex-col gap-4">
-            <label class="font-medium text-gray-800 text-sm" for="">Descripción</label>
-            <input
-              [value]="nuevaPrueba().descripcion"
-              (input)="onPruebaDescripcionChange($any($event.target).value)"
-              class="placeholder:text-gray-500 px-4 py-3 border bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              type="text"
-              placeholder="Ej: Medir resistencia..."
-            />
-          </div>
-          <div class="flex flex-col gap-4">
-            <label class="font-medium text-gray-800 text-sm" for="">Valor prueba</label>
-            <input
-              [value]="nuevaPrueba().valor"
-              (input)="onPruebaValorChange($any($event.target).value)"
-              class="placeholder:text-gray-500 px-4 py-3 border bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              type="number"
-              placeholder="Ej: 42"
-            />
-          </div>
-        </div>
-        <!-- Botones -->
-        <div class="flex items-center justify-end gap-2">
-          <button
-            (click)="[limpiarCamposNuevaPrueba(), cerrarModalCreacionPrueba()]"
-            class="bg-gray-50 text-gray-800 px-6 py-3 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 mr-4"
-          >
-            Cancelar
-          </button>
-          <button
-            [disabled]="!puedeAgregarPrueba()"
-            (click)="[agregarPrueba(), limpiarCamposNuevaPrueba(), cerrarModalCreacionPrueba()]"
-            class="bg-green-500 text-white px-6 py-3 font-medium rounded-lg flex items-center gap-2 hover:bg-green-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
-          >
-            Agregar prueba
-          </button>
-        </div>
-      </div>
-    </div>
-    } @if (errorToastMessage() !== null) {
-    <div
-      class="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow flex flex-col gap-4"
-    >
-      <h3 class="font-medium">Hubo un error</h3>
-      <p class="font-light">{{ errorToastMessage() }}</p>
-    </div>
-    } @if (successToastMessage() !== null) {
-    <div
-      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow flex flex-col gap-4"
-    >
-      <h3>Ensayo creado con exito</h3>
-      <p class="font-light">{{ successToastMessage() }}</p>
-    </div>
-    }`,
+    <app-toast
+      [type]="'error'"
+      [message]="errorToastMessage()"
+      (closed)="errorToastMessage.set(null)"
+    ></app-toast>
+    <app-toast
+      [type]="'success'"
+      [message]="successToastMessage()"
+      (closed)="successToastMessage.set(null)"
+    ></app-toast> `,
 })
 export class EnsayoForm {
   constructor(private router: Router, private ensayoService: EnsayoService) {}
@@ -224,15 +169,11 @@ export class EnsayoForm {
 
     this.ensayoService.create(nuevoEnsayo).subscribe({
       next: () => {
-        this.successToastMessage.set(
-          'Toque el boton volver para regresar al inicio y ver el ensayo.'
-        );
-        setTimeout(() => this.successToastMessage.set(null), 3000);
+        this.successToastMessage.set('Ensayo creado con exito');
         this.limpiarFormulario();
       },
       error: (err) => {
         this.errorToastMessage.set(err.error.message || 'Error desconocido');
-        setTimeout(() => this.errorToastMessage.set(null), 3000);
       },
     });
   }
