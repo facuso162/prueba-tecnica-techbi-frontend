@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { EnsayoService } from '../../services/ensayo.service';
 import { Toast } from '../../components/toast/toast';
@@ -116,7 +116,8 @@ import { PruebaAddModal } from '../../components/prueba-add-modal/prueba-add-mod
     ></app-toast> `,
 })
 export class EnsayoForm {
-  constructor(private router: Router, private ensayoService: EnsayoService) {}
+  private router = inject(Router);
+  private ensayoService = inject(EnsayoService);
 
   nombre = signal('');
   formula = signal('');
