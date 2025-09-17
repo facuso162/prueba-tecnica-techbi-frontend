@@ -1,59 +1,131 @@
-# PruebaTecnicaTechbiFrontend
+# Prueba Técnica Techbi
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.1.
+Esta es la aplicación para registrar y administrar ensayos y pruebas de Dexter.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+Para poder ejecutar la aplicación, necesitas tener instalado en tu máquina:
 
-```bash
-ng serve
-```
+- **Node.js** >= 22.14.0
+- **npm** (viene con Node.js)
+- No se requiere motor de base de datos externo ya que se usa **SQLite**.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Instalación
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Backend
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+1. Ir al directorio del backend:
 
 ```bash
-ng generate --help
+cd backend
 ```
 
-## Building
-
-To build the project run:
+2. Instalar dependencias:
 
 ```bash
-ng build
+npm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+3. Iniciar el servidor en modo desarrollo:
 
 ```bash
-ng test
+npm run dev
 ```
 
-## Running end-to-end tests
+El backend se levantará en **[http://localhost:3000](http://localhost:3000)**
 
-For end-to-end (e2e) testing, run:
+> Puedes encontrar el codigo del backend haciendo [click aqui.](https://github.com/facuso162/prueba-tecnica-techbi)
+
+---
+
+### Frontend
+
+1. Ir al directorio del frontend:
 
 ```bash
-ng e2e
+cd frontend
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+2. Instalar dependencias:
 
-## Additional Resources
+```bash
+npm install
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+3. Levantar el servidor de Angular:
+
+```bash
+npm start
+```
+
+El frontend se levantará en **[http://localhost:4200](http://localhost:4200)**
+
+---
+
+## Estructura de la Base de Datos
+
+Se utiliza **SQLite** con los siguientes modelos:
+
+- `Ensayo`:
+
+  - `codigo` (PK)
+  - `nombre`
+  - `descripcion`
+  - `formula`
+  - `fechaCreacion`
+  - relación uno a muchos con `Prueba`
+
+- `Prueba`:
+
+  - `codigo` (PK)
+  - `descripcion`
+  - `valor`
+  - `codigoEnsayo` (FK)
+  - Relación con `Ensayo` (`onDelete: Cascade`)
+
+---
+
+## Rutas del Backend
+
+### Ensayos
+
+| Método | Ruta              | Descripción                    |
+| ------ | ----------------- | ------------------------------ |
+| GET    | /ensayos          | Listar todos los ensayos       |
+| GET    | /ensayos/\:codigo | Obtener un ensayo por código   |
+| POST   | /ensayos          | Crear un nuevo ensayo          |
+| PUT    | /ensayos/\:codigo | Actualizar un ensayo existente |
+| DELETE | /ensayos/\:codigo | Eliminar un ensayo             |
+
+> Todos los endpoints devuelven JSON y utilizan validación con **Zod**.
+
+---
+
+## Notas
+
+- La fecha de creación se guarda como **string** en formato `AAAA/MM/DD` según la zona horaria de Argentina.
+- Prisma Client es utilizado para todas las operaciones de la base de datos.
+- TailwindCSS está configurado en el frontend para estilos.
+
+---
+
+## Comandos útiles
+
+### Backend
+
+```bash
+npm run dev           # Levantar backend en modo desarrollo
+npx prisma studio     # Ver base de datos en interfaz web
+```
+
+### Frontend
+
+```bash
+npm start             # Levantar servidor Angular
+npm run build         # Compilar Angular
+npm run watch         # Build en modo watch
+```
+
+Desarrollado por [Facundo Sosa](https://www.linkedin.com/in/facuso/)
