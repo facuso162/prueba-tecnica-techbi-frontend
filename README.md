@@ -28,7 +28,14 @@ cd backend
 npm install
 ```
 
-3. Iniciar el servidor en modo desarrollo:
+3. Ir a la carpeta /src y generar el cliente de Prisma
+
+```bash
+cd src
+npx prisma generate
+```
+
+4. Iniciar el servidor en modo desarrollo:
 
 ```bash
 npm run dev
