@@ -1,8 +1,7 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Ensayo, EnsayoService } from '../../services/ensayo.service';
-// import { EnsayoService } from '../services/ensayo.service';
-// import { Ensayo } from '../models/ensayo.model';
+import { PruebaItem } from '../../components/prueba-item/prueba-item';
 
 @Component({
   selector: 'app-ensayo-edit-form',
@@ -80,42 +79,14 @@ import { Ensayo, EnsayoService } from '../../services/ensayo.service';
             } @else { @for (prueba of pruebasEdicion(); track $index) {
 
             <li>
-              <div class="bg-gray-50 p-4 rounded-lg flex gap-2 justify-between items-center">
-                <div class="flex flex-col gap-2">
-                  <p class="flex flex-col gap-1">
-                    <span class="text-gray-600">Descripcion:</span>
-                    <span class="font-medium">{{ prueba.descripcion }}</span>
-                  </p>
-                  <p class="flex flex-col gap-1">
-                    <span class="text-gray-600">Valor:</span>
-                    <span class="font-medium">{{ prueba.valor }}</span>
-                  </p>
-                </div>
-
-                <button
-                  (click)="onPruebaEliminada(prueba.codigo)"
-                  class="self-start hover:bg-red-50 rounded-lg transition-colors p-2 text-red-500"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-trash2-icon lucide-trash-2"
-                  >
-                    <path d="M10 11v6" />
-                    <path d="M14 11v6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                    <path d="M3 6h18" />
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </div>
+              <app-prueba-item
+                [prueba]="{
+                  descripcion: prueba.descripcion,
+                  valor: prueba.valor,
+                  codigo: prueba.codigo
+                }"
+                (borrar)="eliminarPrueba($event)"
+              ></app-prueba-item>
             </li>
             } }
           </ul>
@@ -253,37 +224,8 @@ export class EnsayoEditForm {
 
   modalAgregarPruebaAbierto = signal(false);
 
-  nuevaPrueba = signal<{ descripcion: string; valor: string }>({
-    descripcion: '',
-    valor: '',
-  });
-
-  // nuevaPruebaDescripcion = signal('');
-  // nuevaPruebaValor = signal<number | null>(null);
-
-  // puedeAgregarPrueba = computed(
-  //   () => this.nuevaPruebaDescripcion().trim().length > 0 && this.nuevaPruebaValor() !== null
-  // );
-
-  puedeAgregarPrueba = computed(
-    () =>
-      this.nuevaPrueba().descripcion.trim().length > 0 && this.nuevaPrueba().valor.trim().length > 0
-  );
-
   errorToastMessage = signal<string | null>(null);
   successToastMessage = signal<string | null>(null);
-
-  onPruebaDescripcionChange(nuevaDescripcionPrueba: string) {
-    this.nuevaPrueba.update((np) => ({ ...np, descripcion: nuevaDescripcionPrueba }));
-  }
-
-  onPruebaValorChange(nuevoValorPrueba: string) {
-    const nuevoValorPruebaParsed = Number(nuevoValorPrueba);
-
-    if (isNaN(nuevoValorPruebaParsed)) return;
-
-    this.nuevaPrueba.update((np) => ({ ...np, valor: nuevoValorPrueba }));
-  }
 
   ngOnInit() {
     const codigo = Number(this.route.snapshot.paramMap.get('codigo'));
@@ -363,30 +305,25 @@ export class EnsayoEditForm {
     this.ediciones.update((e) => ({ ...e, descripcion: nuevoValor }));
   }
 
-  agregarPrueba() {
+  agregarPrueba(prueba: { descripcion: string; valor: number }) {
     const tempId = -Math.floor(Math.random() * 1000000);
-
-    const pruebaAAgregar = {
-      descripcion: this.nuevaPrueba().descripcion,
-      valor: Number(this.nuevaPrueba().valor),
-    };
 
     this.ediciones.update((e) => ({
       ...e,
-      pruebasACrear: e.pruebasACrear ? [...e.pruebasACrear, pruebaAAgregar] : [pruebaAAgregar],
+      pruebasACrear: e.pruebasACrear ? [...e.pruebasACrear, prueba] : [prueba],
     }));
 
     this.pruebasEdicion.update((pe) => [
       ...pe,
       {
-        ...pruebaAAgregar,
+        ...prueba,
         codigo: tempId,
         codigoEnsayo: this.ensayo()!.codigo,
       },
     ]);
   }
 
-  onPruebaEliminada(codigoPrueba: number) {
+  eliminarPrueba(codigoPrueba: number) {
     const prueba = this.pruebasEdicion().find((p) => p.codigo === codigoPrueba);
     if (!prueba) return;
 
@@ -473,12 +410,5 @@ export class EnsayoEditForm {
 
   cerrarModalCreacionPrueba() {
     this.modalAgregarPruebaAbierto.set(false);
-  }
-
-  limpiarCamposNuevaPrueba() {
-    this.nuevaPrueba.set({
-      descripcion: '',
-      valor: '',
-    });
   }
 }

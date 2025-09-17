@@ -1,10 +1,11 @@
 import { Component, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { EnsayoService } from '../../services/ensayo.service';
+import { PruebaItem } from '../../components/prueba-item/prueba-item';
 
 @Component({
   selector: 'app-ensayo-form',
-  imports: [],
+  imports: [Toast, PruebaItem, PruebaAddModal],
   template: `<main class="bg-gray-50 p-4 flex flex-col gap-4 min-h-lvh max-w-4xl mx-auto">
       <h1 class="text-2xl font-bold">Crear ensayo</h1>
       <section class="flex flex-col gap-4">
@@ -70,42 +71,10 @@ import { EnsayoService } from '../../services/ensayo.service';
             } @else { @for (prueba of pruebas(); track $index) {
 
             <li>
-              <div class="bg-gray-50 p-4 rounded-lg flex gap-2 justify-between items-center">
-                <div class="flex flex-col gap-2">
-                  <p class="flex flex-col gap-1">
-                    <span class="text-gray-600">Descripcion:</span>
-                    <span class="font-medium">{{ prueba.descripcion }}</span>
-                  </p>
-                  <p class="flex flex-col gap-1">
-                    <span class="text-gray-600">Valor:</span>
-                    <span class="font-medium">{{ prueba.valor }}</span>
-                  </p>
-                </div>
-
-                <button
-                  class="self-start hover:bg-red-50 rounded-lg transition-colors p-2 text-red-500"
-                  (click)="eliminarPrueba($index)"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-trash2-icon lucide-trash-2"
-                  >
-                    <path d="M10 11v6" />
-                    <path d="M14 11v6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                    <path d="M3 6h18" />
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                </button>
-              </div>
+              <app-prueba-item
+                [prueba]="{ descripcion: prueba.descripcion, valor: prueba.valor, codigo: $index }"
+                (borrar)="eliminarPrueba($event)"
+              ></app-prueba-item>
             </li>
             } }
           </ul>
@@ -233,30 +202,8 @@ export class EnsayoForm {
     this.modalAgregarPruebaAbierto.set(false);
   }
 
-  onPruebaDescripcionChange(nuevaDescripcionPrueba: string) {
-    this.nuevaPrueba.update((np) => ({ ...np, descripcion: nuevaDescripcionPrueba }));
-  }
-
-  onPruebaValorChange(nuevoValorPrueba: string) {
-    const nuevoValorPruebaParsed = Number(nuevoValorPrueba);
-
-    if (isNaN(nuevoValorPruebaParsed)) return;
-
-    this.nuevaPrueba.update((np) => ({ ...np, valor: nuevoValorPrueba }));
-  }
-
-  limpiarCamposNuevaPrueba() {
-    this.nuevaPrueba.set({
-      descripcion: '',
-      valor: '',
-    });
-  }
-
-  agregarPrueba() {
-    this.pruebas.update((pruebas) => [
-      ...pruebas,
-      { descripcion: this.nuevaPrueba().descripcion, valor: Number(this.nuevaPrueba().valor) },
-    ]);
+  agregarPrueba(prueba: { descripcion: string; valor: number }) {
+    this.pruebas.update((pruebas) => [...pruebas, prueba]);
   }
 
   eliminarPrueba(i: number) {
