@@ -1,8 +1,9 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { EnsayoItem } from '../../components/ensayo-item/ensayo-item';
 import { EnsayoService, Ensayo } from '../../services/ensayo.service';
 import { Router } from '@angular/router';
 import { Toast } from '../../components/toast/toast';
+import { ConfirmModal } from '../../components/confirm-modal/confirm-modal';
 
 @Component({
   selector: 'app-home',
@@ -57,6 +58,15 @@ import { Toast } from '../../components/toast/toast';
       [message]="successToastMessage()"
       (closed)="successToastMessage.set(null)"
     ></app-toast>
+    <app-confirm-modal
+      [abierto]="ensayoAEliminar() !== null"
+      [titulo]="'Confirmar eliminación'"
+      [mensaje]="'¿Estás seguro de que deseas borrar el ensayo ' + ensayoAEliminar()?.nombre + '?'"
+      [textoCancelar]="'Cancelar'"
+      [textoConfirmar]="'Borrar ensayo'"
+      (cancelar)="cancelarBorrado()"
+      (confirmar)="confirmarBorrado()"
+    ></app-confirm-modal>
   </main>`,
 })
 export class Home {
@@ -66,6 +76,8 @@ export class Home {
   ensayos = signal<Ensayo[]>([]);
   errorToastMessage = signal<string | null>(null);
   successToastMessage = signal<string | null>(null);
+
+  ensayoAEliminar = signal<Ensayo | null>(null);
 
   ngOnInit() {
     this.ensayoService.getAll().subscribe({
@@ -83,8 +95,6 @@ export class Home {
   verEnsayo(codigo: number) {
     this.router.navigate([`/ensayo/${codigo}`]);
   }
-
-  ensayoAEliminar = signal<Ensayo | null>(null);
 
   borrarEnsayo(codigo: number) {
     const ensayo = this.ensayos().find((e) => e.codigo === codigo);
