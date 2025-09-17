@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { EnsayoService } from '../../services/ensayo.service';
 import { Toast } from '../../components/toast/toast';
 import { PruebaItem } from '../../components/prueba-item/prueba-item';
+import { PruebaAddModal } from '../../components/prueba-add-modal/prueba-add-modal';
 
 @Component({
   selector: 'app-ensayo-form',
@@ -98,6 +99,11 @@ import { PruebaItem } from '../../components/prueba-item/prueba-item';
         </div>
       </section>
     </main>
+    <app-prueba-add-modal
+      [abierto]="modalAgregarPruebaAbierto()"
+      (cerrar)="cerrarModalCreacionPrueba()"
+      (agregar)="[agregarPrueba($event), cerrarModalCreacionPrueba()]"
+    ></app-prueba-add-modal>
     <app-toast
       [type]="'error'"
       [message]="errorToastMessage()"
@@ -127,16 +133,6 @@ export class EnsayoForm {
       this.nombre().trim().length > 0 &&
       this.formula().trim().length > 0 &&
       this.descripcion().trim().length > 0
-  );
-
-  nuevaPrueba = signal<{ descripcion: string; valor: string }>({
-    descripcion: '',
-    valor: '',
-  });
-
-  puedeAgregarPrueba = computed(
-    () =>
-      this.nuevaPrueba().descripcion.trim().length > 0 && this.nuevaPrueba().valor.trim().length > 0
   );
 
   abrirModalCreacionPrueba() {

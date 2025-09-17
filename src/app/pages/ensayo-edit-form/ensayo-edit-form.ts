@@ -1,12 +1,13 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Ensayo, EnsayoService } from '../../services/ensayo.service';
 import { Toast } from '../../components/toast/toast';
 import { PruebaItem } from '../../components/prueba-item/prueba-item';
+import { PruebaAddModal } from '../../components/prueba-add-modal/prueba-add-modal';
 
 @Component({
+  selector: 'app-ensayo-edit-form',
   imports: [Toast, PruebaItem, PruebaAddModal],
-  imports: [],
   template: `
     <main class="bg-gray-50 p-4 flex flex-col gap-4 min-h-lvh max-w-4xl mx-auto">
       @if (cargando()) {
@@ -78,7 +79,6 @@ import { PruebaItem } from '../../components/prueba-item/prueba-item';
             @if (pruebasEdicion().length === 0) {
             <p class="text-gray-500 text-center">No hay pruebas agregadas.</p>
             } @else { @for (prueba of pruebasEdicion(); track $index) {
-
             <li>
               <app-prueba-item
                 [prueba]="{
@@ -118,6 +118,11 @@ import { PruebaItem } from '../../components/prueba-item/prueba-item';
       </section>
       }
     </main>
+    <app-prueba-add-modal
+      [abierto]="modalAgregarPruebaAbierto()"
+      (cerrar)="cerrarModalCreacionPrueba()"
+      (agregar)="[agregarPrueba($event), cerrarModalCreacionPrueba()]"
+    ></app-prueba-add-modal>
     <app-toast
       [type]="'error'"
       [message]="errorToastMessage()"
